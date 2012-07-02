@@ -1,9 +1,9 @@
 {
   "author": "Karl Seguin <karl@openmymind.net> (http://openmymind.net/)",
   "name": "RedisLight",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A lightweight mapper for Redis",
-  "engines": { "node": ">= v0.6.17" },
+  "engines": { "node": ">= v0.8.0" },
   "main": "./lib/redis_light",
   "dependencies": {
     "redis": "= 0.7.1",

@@ -55,9 +55,13 @@ class Model
       return
     return callback('missing id') if !@.id?
 
+    @_persist @save_data(), callback
+    return @
+
+  save_data: =>
     data = {}
     data[alias] = @[name] for name, alias of @.constructor._map when @[name]?
-    @_persist H.serialize(data), callback
+    H.serialize(data)
 
   _persist: (data, callback) ->
     @redis().set @_key(@.id), data, callback

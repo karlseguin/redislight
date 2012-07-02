@@ -9,8 +9,11 @@ class EmbeddedModel extends Model
 
   @key: (id) -> "#{@_belongs_key}:#{id}:#{@_storage_name}"
 
-  @find: (parent_id, id, options, callback) ->
-    @redis().hget @key(parent_id), id, @_callback(parent_id, id, options, callback)
+  @find:  (parent_id, id, options, callback) ->
+    if Array.isArray(id)
+      @redis().hmget @key(parent_id), id, @_callback(parent_id, id, options, callback)
+    else
+      @redis().hget @key(parent_id), id, @_callback(parent_id, id, options, callback)
 
   @find_all: (parent_id, options, callback) ->
     @redis().hgetall @key(parent_id), @_callback(parent_id, null, options, callback)
@@ -19,14 +22,22 @@ class EmbeddedModel extends Model
     callback = options if options instanceof Function
     (err, data) =>
       return callback(err, data) if err?  || !data?
-      if item_id?
+      if Array.isArray(item_id)
+        values = {}
+        for value, index in data
+          values[item_id[index]] = @_create(parent_id, item_id[index], value, options.raw)
+        callback(err, values)
+      else if item_id?
         item = @_create(parent_id, item_id, data, options.raw)
         callback(err, item)
       else
-        values = (@_create(parent_id, id, value, options.raw) for id, value of data)
+        values = {}
+        for id, value of data
+          values[id] = @_create(parent_id, id, value, options.raw)
         callback(err, values)
 
   @_create: (parent_id, id, data, raw) ->
+    return null unless data?
     id = parseInt(id) if @_auto_id == true
     item = super(id, data, raw)
     item[@_belongs_to] = parent_id
